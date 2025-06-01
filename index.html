@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Config Sharing GUI</title>
+  <!-- Google Font: Lexend SemiBold -->
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Lexend', sans-serif;
+    }
+    /* Body fills viewport and centers the fixed-size container */
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    /* Container is fixed to design resolution but centered in viewport */
+    .container {
+      width: 1320px;
+      height: 774px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: #f5f5f5;
+    }
+    /* Base page sliding (for selection page) */
+    .page {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.6s ease;
+    }
+    .page.hidden-left {
+      transform: translateX(-100%);
+    }
+    .page.hidden-right {
+      transform: translateX(100%);
+    }
+    .page.visible {
+      transform: translateX(0);
+    }
+    /* Selection Page */
+    #selection-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .arrow {
+      font-size: 48px;
+      cursor: pointer;
+      user-select: none;
+      color: #000;
+      padding: 20px;
+      transition: color 0.3s;
+    }
+    .arrow.disabled {
+      color: #ccc;
+      cursor: default;
+    }
+    .arrow:hover:not(.disabled) {
+      color: #555;
+    }
+    .cards-wrapper {
+      display: flex;
+      gap: 80px;
+      margin: 0 40px;
+      justify-content: center;
+    }
+    .card {
+      width: 320px;
+      height: 400px;
+      background-color: #D9D9D9;
+      border: 2px solid #000;
+      border-radius: 50px;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.4s ease;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+    }
+    .thumbnail {
+      margin-top: 20px;
+      width: 260px;
+      height: 140px;
+      background-color: #C0C0C0;
+      border-radius: 30px;
+      border: 2px solid #000;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card-info {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .card-name {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 16px;
+      color: #333;
+    }
+    /* Detail Page: centered pop-up */
+    #detail-page {
+      width: 800px;
+      height: 500px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      background-color: #D9D9D9;
+      border: 2px solid #000;
+      border-radius: 50px;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 40px;
+      /* Start off-screen to the right */
+      transform: translate(150%, -50%);
+      transition: transform 0.6s ease;
+    }
+    /* Override base page classes for center positioning */
+    #detail-page.hidden-right {
+      transform: translate(150%, -50%);
+    }
+    #detail-page.visible {
+      transform: translate(-50%, -50%);
+    }
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 32px;
+      cursor: pointer;
+      user-select: none;
+      color: #000;
+      transition: color 0.3s;
+    }
+    .close-btn:hover {
+      color: #555;
+    }
+    .detail-thumbnail {
+      width: 300px;
+      height: 180px;
+      background-color: #C0C0C0;
+      border-radius: 50px;
+      border: 2px solid #000;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .detail-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .detail-title {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .detail-desc {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: auto;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .download-btn {
+      background-color: #D9D9D9;
+      border: 2px solid #000;
+      border-radius: 50px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.55);
+      padding: 16px 32px;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 30px;
+      transition: transform 0.3s ease;
+      text-decoration: none;
+      color: #000;
+    }
+    .download-btn:hover {
+      transform: translateY(-4px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Selection Page -->
+    <div id="selection-page" class="page visible">
+      <div class="arrow disabled" id="prev-arrow">&#10094;</div>
+      <div class="cards-wrapper" id="cards-wrapper">
+        <!-- Cards will be injected here -->
+      </div>
+      <div class="arrow disabled" id="next-arrow">&#10095;</div>
+    </div>
+
+    <!-- Detail Page -->
+    <div id="detail-page" class="hidden-right">
+      <div class="close-btn" id="close-detail">&#10005;</div>
+      <div class="detail-thumbnail" id="detail-thumbnail"></div>
+      <div class="detail-title" id="detail-title"></div>
+      <div class="detail-desc" id="detail-desc"></div>
+      <a class="download-btn" id="download-btn" href="#" download>Download</a>
+    </div>
+  </div>
+
+  <script>
+    let configData = [];
+    let currentPage = 0;
+    const itemsPerPage = 2;
+
+    const cardsWrapper = document.getElementById('cards-wrapper');
+    const selectionPage = document.getElementById('selection-page');
+    const detailPage = document.getElementById('detail-page');
+    const closeBtn = document.getElementById('close-detail');
+    const prevArrow = document.getElementById('prev-arrow');
+    const nextArrow = document.getElementById('next-arrow');
+    const detailThumbnail = document.getElementById('detail-thumbnail');
+    const detailTitle = document.getElementById('detail-title');
+    const detailDesc = document.getElementById('detail-desc');
+    const downloadBtn = document.getElementById('download-btn');
+
+    // Load configs.json on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('configs.json')
+        .then(response => response.json())
+        .then(data => {
+          configData = data;
+          updateArrows();
+          renderCards();
+        })
+        .catch(err => console.error('Error loading configs.json:', err));
+    });
+
+    function renderCards() {
+      cardsWrapper.innerHTML = '';
+      const start = currentPage * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageItems = configData.slice(start, end);
+
+      pageItems.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.index = start + index;
+
+        const thumbDiv = document.createElement('div');
+        thumbDiv.classList.add('thumbnail');
+        const img = document.createElement('img');
+        img.src = item.thumbnail;
+        img.alt = item.name + ' thumbnail';
+        thumbDiv.appendChild(img);
+
+        const infoDiv = document.createElement('div');
+        infoDiv.classList.add('card-info');
+        const nameDiv = document.createElement('div');
+        nameDiv.classList.add('card-name');
+        nameDiv.textContent = item.name;
+        const descDiv = document.createElement('div');
+        descDiv.classList.add('card-desc');
+        descDiv.textContent = item.description;
+
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(descDiv);
+        card.appendChild(thumbDiv);
+        card.appendChild(infoDiv);
+
+        card.addEventListener('click', () => showDetail(start + index));
+        cardsWrapper.appendChild(card);
+      });
+    }
+
+    function showDetail(index) {
+      const config = configData[index];
+      detailThumbnail.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = config.thumbnail;
+      img.alt = config.name + ' thumbnail';
+      detailThumbnail.appendChild(img);
+
+      detailTitle.textContent = config.name;
+      detailDesc.textContent = config.description;
+      downloadBtn.href = config.fileUrl;
+
+      selectionPage.classList.replace('visible', 'hidden-left');
+      detailPage.classList.replace('hidden-right', 'visible');
+    }
+
+    closeBtn.addEventListener('click', () => {
+      detailPage.classList.replace('visible', 'hidden-right');
+      selectionPage.classList.replace('hidden-left', 'visible');
+    });
+
+    function updateArrows() {
+      const totalPages = Math.ceil(configData.length / itemsPerPage);
+      // Left arrow
+      if (currentPage <= 0) {
+        prevArrow.classList.add('disabled');
+      } else {
+        prevArrow.classList.remove('disabled');
+      }
+      // Right arrow
+      if (currentPage >= totalPages - 1) {
+        nextArrow.classList.add('disabled');
+      } else {
+        nextArrow.classList.remove('disabled');
+      }
+    }
+
+    prevArrow.addEventListener('click', () => {
+      if (currentPage > 0) {
+        currentPage--;
+        updateArrows();
+        renderCards();
+      }
+    });
+    nextArrow.addEventListener('click', () => {
+      const totalPages = Math.ceil(configData.length / itemsPerPage);
+      if (currentPage < totalPages - 1) {
+        currentPage++;
+        updateArrows();
+        renderCards();
+      }
+    });
+  </script>
+</body>
+</html>

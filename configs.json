@@ -1,0 +1,26 @@
+[
+  {
+    "thumbnail": "thumb1.png",
+    "name": "NemZ v1",
+    "description": "First config",
+    "fileUrl": "configs/nemz-v1.txt"
+  },
+  {
+    "thumbnail": "thumb1.png",
+    "name": "NemZ v2",
+    "description": "Second config (Scaffold is not gud)",
+    "fileUrl": "configs/nemz-v2.txt"
+  },
+  {
+    "thumbnail": "thumb1.png",
+    "name": "Special 100 followers",
+    "description": "Ty for 100 followers",
+    "fileUrl": "configs/nemz-v2.5.txt"
+  },
+  {
+    "thumbnail": "thumb1.png",
+    "name": "NemZ v3",
+    "description": "No method needed, just load it in",
+    "fileUrl": "configs/nemz-v3.txt"
+  }
+]
